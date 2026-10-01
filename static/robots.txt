@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /mensagens
+Disallow: /sacola
+Disallow: /vendas
+Disallow: /favoritos
+Disallow: /perfil
