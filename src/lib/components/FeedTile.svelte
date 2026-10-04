@@ -1,12 +1,16 @@
 <script lang="ts">
+	import type { User } from '$lib/api/schemas';
 	import type { ListingWithSeller } from '$lib/api/types';
 	import { formatBRL, formatKm } from '$lib/utils/format';
 	import FavoriteButton from './FavoriteButton.svelte';
+	import Icon from './Icon.svelte';
 	import Photo from './Photo.svelte';
 
-	let { item }: { item: ListingWithSeller } = $props();
+	let { item, people }: { item: ListingWithSeller; people: Record<string, User> } = $props();
 
 	const listing = $derived(item.listing);
+	const latest = $derived(listing.comments.reduce<(typeof listing.comments)[number] | undefined>((a, c) => (!a || c.createdAt > a.createdAt ? c : a), undefined));
+	const latestAuthor = $derived(latest ? (latest.authorId === item.seller.id ? 'Vendedor(a)' : (people[latest.authorId]?.name ?? 'Alguém')) : '');
 </script>
 
 <article class="tile" aria-labelledby="ft-{listing.id}">
@@ -18,6 +22,15 @@
 		<span class="price display">{formatBRL(listing.price)}</span>
 		<h2 class="name" id="ft-{listing.id}">{listing.title}</h2>
 		<span class="meta">{listing.neighborhood} · {formatKm(listing.distanceKm)}</span>
+	</a>
+	<a class="talk" href="/anuncio/{listing.id}#comentarios">
+		<Icon name="chat" size={14} />
+		{#if latest}
+			<span class="count">{listing.comments.length}</span>
+			<span class="last"><strong>{latestAuthor}:</strong> {latest.text}</span>
+		{:else}
+			<span class="last">Seja o primeiro a comentar</span>
+		{/if}
 	</a>
 </article>
 
@@ -65,6 +78,35 @@
 	.meta {
 		font-size: 12px;
 		color: var(--muted);
+	}
+	.talk {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		min-width: 0;
+		padding: 7px 10px;
+		border-radius: var(--radius-s);
+		background: var(--surface);
+		font-size: 12px;
+		color: var(--ink-3);
+	}
+	.talk:hover {
+		background: var(--accent-softer);
+	}
+	.talk :global(svg) {
+		flex: none;
+	}
+	.count {
+		font-weight: 800;
+		color: var(--ink);
+	}
+	.last {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.last strong {
+		color: var(--ink);
 	}
 	.tile:hover .name {
 		text-decoration: underline;

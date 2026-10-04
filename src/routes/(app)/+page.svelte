@@ -91,7 +91,7 @@
 		</div>
 		<div class="grid">
 			{#each data.items as item (item.listing.id)}
-				<FeedTile {item} />
+				<FeedTile {item} people={data.people} />
 			{/each}
 		</div>
 		{#if data.hasMore}
