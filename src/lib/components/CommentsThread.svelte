@@ -12,10 +12,8 @@
 		item: ListingWithSeller;
 		people: Record<string, User>;
 		viewer: User;
-		/** Narrow layout for feed tiles: no avatars, smaller text. */
-		compact?: boolean;
 	}
-	let { item, people, viewer, compact = false }: Props = $props();
+	let { item, people, viewer }: Props = $props();
 
 	const listing = $derived(item.listing);
 	const href = $derived(`/anuncio/${listing.id}`);
@@ -32,14 +30,14 @@
 	}
 </script>
 
-<div class="thread" class:compact>
+<div class="thread">
 	{#if listing.comments.length === 0}
 		<p class="empty">Ninguém comentou ainda. Pergunte algo pra {item.seller.name}!</p>
 	{:else}
 		<ul class="list">
 			{#each listing.comments as c (c.id)}
 				<li class:reply={!!c.replyTo}>
-					{#if !compact}<Avatar name={author(c)} size="s" tone={c.authorId === viewer.id ? 'accent' : 'soft'} />{/if}
+					<Avatar name={author(c)} size="s" tone={c.authorId === viewer.id ? 'accent' : 'soft'} />
 					<div>
 						<div class="bubble">
 							<strong>{author(c)}</strong>
@@ -169,36 +167,6 @@
 		font-size: 12px;
 		font-weight: 700;
 		color: var(--accent-ink);
-	}
-	.compact {
-		gap: 10px;
-	}
-	.compact .list {
-		gap: 8px;
-	}
-	.compact .list li.reply {
-		margin-left: 14px;
-	}
-	.compact .bubble {
-		padding: 8px 10px;
-		border-radius: 12px;
-		font-size: 13px;
-		overflow-wrap: anywhere;
-	}
-	.compact .when {
-		margin-left: 10px;
-	}
-	.compact .empty {
-		font-size: 13px;
-	}
-	.compact .row .field {
-		min-height: 38px;
-		min-width: 0;
-		font-size: 13px;
-	}
-	.compact .send {
-		width: 38px;
-		height: 38px;
 	}
 	.replying button {
 		display: inline-grid;

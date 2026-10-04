@@ -6,9 +6,10 @@
 	import FavoriteButton from './FavoriteButton.svelte';
 	import Icon from './Icon.svelte';
 	import Photo from './Photo.svelte';
+	import Sheet from './Sheet.svelte';
 
 	let { item, people, viewer }: { item: ListingWithSeller; people: Record<string, User>; viewer: User } = $props();
-	let expanded = $state(false);
+	let commentsOpen = $state(false);
 
 	const listing = $derived(item.listing);
 	const latest = $derived(listing.comments.reduce<(typeof listing.comments)[number] | undefined>((a, c) => (!a || c.createdAt > a.createdAt ? c : a), undefined));
@@ -25,20 +26,21 @@
 		<h2 class="name" id="ft-{listing.id}">{listing.title}</h2>
 		<span class="meta">{listing.neighborhood} · {formatKm(listing.distanceKm)}</span>
 	</a>
-	<button type="button" class="talk" aria-expanded={expanded} onclick={() => (expanded = !expanded)}>
+	<button type="button" class="talk" aria-haspopup="dialog" onclick={() => (commentsOpen = true)}>
 		<Icon name="chat" size={14} />
-		{#if expanded}
-			<span class="last">{listing.comments.length > 0 ? `${listing.comments.length} comentários` : 'Comentários'}</span>
-			<span class="hide">Fechar</span>
-		{:else if latest}
+		{#if latest}
 			<span class="count">{listing.comments.length}</span>
 			<span class="last"><strong>{latestAuthor}:</strong> {latest.text}</span>
 		{:else}
 			<span class="last">Seja o primeiro a comentar</span>
 		{/if}
 	</button>
-	{#if expanded}<CommentsThread {item} {people} {viewer} compact />{/if}
 </article>
+
+<Sheet bind:open={commentsOpen} title="Comentários">
+	<p class="about"><strong>{listing.title}</strong> · <a href="/anuncio/{listing.id}">ver anúncio</a></p>
+	<CommentsThread {item} {people} {viewer} />
+</Sheet>
 
 <style>
 	.tile {
@@ -109,10 +111,17 @@
 	.talk :global(svg) {
 		flex: none;
 	}
-	.hide {
-		margin-left: auto;
-		font-weight: 700;
+	.about {
+		margin: -8px 0 0;
+		font-size: 14px;
+		color: var(--muted);
+	}
+	.about strong {
 		color: var(--ink);
+	}
+	.about a {
+		color: var(--accent);
+		font-weight: 700;
 	}
 	.count {
 		font-weight: 800;
