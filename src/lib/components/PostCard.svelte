@@ -49,7 +49,12 @@
 				>
 			</span>
 		</div>
-		<FavoriteButton listingId={listing.id} favorite={item.favorite} title={listing.title} />
+		<div class="head-actions">
+			<button type="button" class="icon-btn offer" aria-label="Fazer oferta em “{listing.title}”" title="Fazer oferta" onclick={() => (offerOpen = true)}>
+				<Icon name="tag" size={18} />
+			</button>
+			<FavoriteButton listingId={listing.id} favorite={item.favorite} title={listing.title} />
+		</div>
 	</header>
 
 	<div class="media">
@@ -80,7 +85,6 @@
 		<a href="{href}#comentarios" class="comments-count" aria-label="{listing.comments.length} comentários">
 			<Icon name="chat" size={20} />{listing.comments.length}
 		</a>
-		<button type="button" class="btn btn-primary offer" onclick={() => (offerOpen = true)}>Fazer oferta</button>
 	</div>
 
 	{#if listing.comments.length > 0}
@@ -134,6 +138,19 @@
 		align-items: center;
 		gap: 12px;
 		padding: 16px 18px 12px;
+	}
+	.head-actions {
+		display: flex;
+		gap: 8px;
+	}
+	.offer {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: var(--white);
+	}
+	.offer:hover {
+		background: var(--accent-ink);
+		border-color: var(--accent-ink);
 	}
 	.who {
 		flex: 1;
@@ -363,9 +380,6 @@
 			gap: 16px;
 			border-top: 0;
 			padding: 6px 14px 12px;
-		}
-		.offer {
-			flex: 1;
 		}
 		.comments {
 			margin: 0 14px;
