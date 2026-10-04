@@ -6,6 +6,7 @@
 	import Icon, { type IconName } from '$lib/components/Icon.svelte';
 	import Menu from '$lib/components/Menu.svelte';
 	import PostCard from '$lib/components/PostCard.svelte';
+	import Sheet from '$lib/components/Sheet.svelte';
 	import { CATEGORY_LABELS, MORE_CATEGORIES, PRIMARY_CATEGORIES } from '$lib/labels';
 
 	let { data } = $props();
@@ -29,6 +30,8 @@
 		const qs = params.toString();
 		return qs ? `/?${qs}` : '/';
 	}
+
+	let distanceOpen = $state(false);
 
 	const moreActive = $derived(data.category !== null && MORE_CATEGORIES.includes(data.category));
 </script>
@@ -62,11 +65,18 @@
 					{/each}
 				</Menu></span>
 			</nav>
-			<Menu label={SORTS[data.sort]} variant="plain" align="end">
-				{#each Object.entries(SORTS) as [key, label] (key)}
-					<a href={hrefWith({ ordem: key === 'recent' ? null : key })} role="menuitem" aria-current={data.sort === key ? 'true' : undefined}>{label}</a>
-				{/each}
-			</Menu>
+			<div class="tools">
+				<button type="button" class="radius" onclick={() => (distanceOpen = true)} aria-haspopup="dialog">
+					<Icon name="pin" size={16} />
+					{data.viewer.neighborhood} · {data.radiusKm === null ? 'com entrega' : `até ${data.radiusKm} km`}
+					<Icon name="chevron-down" size={16} />
+				</button>
+				<Menu label={SORTS[data.sort]} variant="plain" align="end">
+					{#each Object.entries(SORTS) as [key, label] (key)}
+						<a href={hrefWith({ ordem: key === 'recent' ? null : key })} role="menuitem" aria-current={data.sort === key ? 'true' : undefined}>{label}</a>
+					{/each}
+				</Menu>
+			</div>
 		</div>
 
 		{#if data.items.length === 0}
@@ -88,23 +98,23 @@
 			{/if}
 		{/if}
 	</main>
-
-	<aside class="rail">
-		<section class="card distance" aria-labelledby="distance-title">
-			<h2 id="distance-title">Até onde você vai buscar?</h2>
-			<DistancePicker radiusKm={data.radiusKm} neighborhood={data.viewer.neighborhood} />
-		</section>
-	</aside>
 </div>
+
+<Sheet bind:open={distanceOpen} title="Até onde você vai buscar?">
+	<DistancePicker
+		radiusKm={data.radiusKm}
+		neighborhood={data.viewer.neighborhood}
+		mode="confirm"
+		onapplied={() => (distanceOpen = false)}
+	/>
+</Sheet>
 
 <AiFab />
 
 <style>
 	.layout {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 300px;
-		gap: 24px;
-		align-items: start;
+		grid-template-columns: minmax(0, 1fr);
 	}
 	.feed {
 		display: grid;
@@ -117,6 +127,27 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 12px;
+	}
+	.tools {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.radius {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 38px;
+		padding: 0 12px 0 14px;
+		border: 1.5px solid var(--line);
+		border-radius: var(--pill);
+		background: var(--white);
+		font-size: 14px;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+	.radius:hover {
+		border-color: var(--ink);
 	}
 	.cats {
 		display: flex;
@@ -141,6 +172,8 @@
 	}
 	.posts {
 		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: start;
 		gap: 20px;
 	}
 	.mob-cat {
@@ -158,32 +191,8 @@
 	.empty h2 {
 		font-size: 20px;
 	}
-	.rail {
-		position: sticky;
-		top: calc(var(--header-h) + 24px);
-	}
-	.distance {
-		display: grid;
-		gap: 14px;
-		padding: 18px;
-	}
-	.distance h2 {
-		font-size: 16px;
-		font-weight: 800;
-	}
 
-	@media (max-width: 1279px) {
-		.layout {
-			grid-template-columns: minmax(0, 1fr) 260px;
-		}
-	}
 	@media (max-width: 1023px) {
-		.layout {
-			grid-template-columns: minmax(0, 1fr);
-		}
-		.rail {
-			display: none;
-		}
 		.feed {
 			gap: 12px;
 		}
@@ -203,6 +212,7 @@
 			display: inline-flex;
 		}
 		.posts {
+			grid-template-columns: minmax(0, 1fr);
 			gap: 14px;
 			padding: 0 12px;
 		}
