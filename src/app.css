@@ -10,11 +10,11 @@
 	--surface-2: #f7f7fa;
 	--placeholder: #e0e0e9;
 	--white: #ffffff;
-	--accent: #5b5bd6;
-	--accent-ink: #3f3fb0;
-	--accent-light: #7c7cf0;
-	--accent-soft: #e4e4fb;
-	--accent-softer: #f1f1fb;
+	--accent: #c2410c;
+	--accent-ink: #9a3412;
+	--accent-light: #fb923c;
+	--accent-soft: #ffedd5;
+	--accent-softer: #fff7ed;
 	--danger: #e5484d;
 
 	--font-body: 'Manrope Variable', 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -27,7 +27,7 @@
 	--pill: 999px;
 
 	--shadow-pop: 0 10px 30px rgba(14, 14, 16, 0.12);
-	--shadow-fab: 0 12px 28px rgba(91, 91, 214, 0.4);
+	--shadow-fab: 0 12px 28px rgba(194, 65, 12, 0.35);
 
 	--header-h: 68px;
 	--bottom-nav-h: 72px;
@@ -152,7 +152,7 @@ p {
 	color: var(--ink);
 }
 .btn-soft:hover {
-	background: #d7d7f8;
+	background: #fed7aa;
 }
 .btn-outline {
 	background: var(--white);
