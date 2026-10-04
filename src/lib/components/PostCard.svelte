@@ -6,6 +6,7 @@
 	import { stayOnPage } from '$lib/forms';
 	import { formatKm, rating, timeAgo } from '$lib/utils/format';
 	import Avatar from './Avatar.svelte';
+	import CommentsThread from './CommentsThread.svelte';
 	import FavoriteButton from './FavoriteButton.svelte';
 	import Icon from './Icon.svelte';
 	import OfferDialog from './OfferDialog.svelte';
@@ -28,6 +29,7 @@
 
 	let slide = $state(0);
 	let offerOpen = $state(false);
+	let commentsOpen = $state(false);
 	let commentError = $state('');
 
 	function onscroll(event: Event) {
@@ -82,12 +84,23 @@
 	</div>
 
 	<div class="actions">
-		<a href="{href}#comentarios" class="comments-count" aria-label="{listing.comments.length} comentários">
+		<button
+			type="button"
+			class="comments-count"
+			aria-expanded={commentsOpen}
+			aria-label="{listing.comments.length} comentários"
+			onclick={() => (commentsOpen = !commentsOpen)}
+		>
 			<Icon name="chat" size={20} />{listing.comments.length}
-		</a>
+		</button>
 	</div>
 
-	{#if listing.comments.length > 0}
+	{#if commentsOpen}
+		<section class="comments" aria-label="Comentários">
+			<CommentsThread {item} {people} {viewer} />
+			<button type="button" class="see-all mob" onclick={() => (commentsOpen = false)}>Ocultar comentários</button>
+		</section>
+	{:else if listing.comments.length > 0}
 		<section class="comments" aria-label="Comentários">
 			{#if listing.comments.length > 2}
 				<a href="{href}#comentarios" class="see-all desk">Ver todos os {listing.comments.length} comentários</a>
@@ -108,7 +121,7 @@
 				{/each}
 			</ul>
 			{#if listing.comments.length > 2}
-				<a href="{href}#comentarios" class="see-all mob">Ver os {listing.comments.length} comentários</a>
+				<button type="button" class="see-all mob" onclick={() => (commentsOpen = true)}>Ver os {listing.comments.length} comentários</button>
 			{/if}
 		</section>
 	{/if}
@@ -223,6 +236,12 @@
 		border-bottom: 1.5px solid var(--line);
 	}
 	.comments-count {
+		padding: 0;
+		border: 0;
+		background: none;
+		color: inherit;
+		font: inherit;
+		cursor: pointer;
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
@@ -273,6 +292,12 @@
 		font-weight: 700;
 	}
 	.see-all {
+		justify-self: start;
+		padding: 0;
+		border: 0;
+		background: none;
+		font-family: inherit;
+		cursor: pointer;
 		font-size: 13px;
 		font-weight: 700;
 		color: var(--muted);

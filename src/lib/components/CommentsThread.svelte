@@ -7,18 +7,19 @@
 	import { timeAgo } from '$lib/utils/format';
 	import Avatar from './Avatar.svelte';
 	import Icon from './Icon.svelte';
-	import Sheet from './Sheet.svelte';
 
 	interface Props {
-		open: boolean;
 		item: ListingWithSeller;
 		people: Record<string, User>;
 		viewer: User;
+		/** Narrow layout for feed tiles: no avatars, smaller text. */
+		compact?: boolean;
 	}
-	let { open = $bindable(), item, people, viewer }: Props = $props();
+	let { item, people, viewer, compact = false }: Props = $props();
 
 	const listing = $derived(item.listing);
 	const href = $derived(`/anuncio/${listing.id}`);
+	const uid = $props.id();
 	const author = (c: Comment) => (c.authorId === viewer.id ? 'Você' : (people[c.authorId]?.name ?? 'Alguém'));
 
 	let replyTo = $state<Comment | null>(null);
@@ -31,16 +32,14 @@
 	}
 </script>
 
-<Sheet bind:open title="Comentários">
-	<p class="about"><strong>{listing.title}</strong> · <a {href}>ver anúncio</a></p>
-
+<div class="thread" class:compact>
 	{#if listing.comments.length === 0}
 		<p class="empty">Ninguém comentou ainda. Pergunte algo pra {item.seller.name}!</p>
 	{:else}
 		<ul class="list">
 			{#each listing.comments as c (c.id)}
 				<li class:reply={!!c.replyTo}>
-					<Avatar name={author(c)} size="s" tone={c.authorId === viewer.id ? 'accent' : 'soft'} />
+					{#if !compact}<Avatar name={author(c)} size="s" tone={c.authorId === viewer.id ? 'accent' : 'soft'} />{/if}
 					<div>
 						<div class="bubble">
 							<strong>{author(c)}</strong>
@@ -74,10 +73,10 @@
 			</span>
 		{/if}
 		<div class="row">
-			<label class="visually-hidden" for="sheet-comment-{listing.id}">Escreva um comentário</label>
+			<label class="visually-hidden" for="{uid}-comment">Escreva um comentário</label>
 			<input
 				bind:this={input}
-				id="sheet-comment-{listing.id}"
+				id="{uid}-comment"
 				name="text"
 				class="field"
 				placeholder="Escreva um comentário…"
@@ -89,31 +88,22 @@
 		</div>
 		{#if error}<span class="error-text" role="alert">{error}</span>{/if}
 	</form>
-</Sheet>
+</div>
 
 <style>
-	.about {
-		margin: -8px 0 0;
-		font-size: 14px;
-		color: var(--muted);
-	}
-	.about strong {
-		color: var(--ink);
-	}
-	.about a {
-		color: var(--accent);
-		font-weight: 700;
+	.thread {
+		display: grid;
+		gap: 12px;
+		min-width: 0;
 	}
 	.empty {
-		padding: 16px 0;
+		margin: 0;
 		color: var(--muted);
 		font-size: 14px;
 	}
 	.list {
 		display: grid;
 		gap: 12px;
-		max-height: min(50vh, 420px);
-		overflow-y: auto;
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -179,6 +169,36 @@
 		font-size: 12px;
 		font-weight: 700;
 		color: var(--accent-ink);
+	}
+	.compact {
+		gap: 10px;
+	}
+	.compact .list {
+		gap: 8px;
+	}
+	.compact .list li.reply {
+		margin-left: 14px;
+	}
+	.compact .bubble {
+		padding: 8px 10px;
+		border-radius: 12px;
+		font-size: 13px;
+		overflow-wrap: anywhere;
+	}
+	.compact .when {
+		margin-left: 10px;
+	}
+	.compact .empty {
+		font-size: 13px;
+	}
+	.compact .row .field {
+		min-height: 38px;
+		min-width: 0;
+		font-size: 13px;
+	}
+	.compact .send {
+		width: 38px;
+		height: 38px;
 	}
 	.replying button {
 		display: inline-grid;

@@ -2,13 +2,13 @@
 	import type { User } from '$lib/api/schemas';
 	import type { ListingWithSeller } from '$lib/api/types';
 	import { formatBRL, formatKm } from '$lib/utils/format';
-	import CommentsSheet from './CommentsSheet.svelte';
+	import CommentsThread from './CommentsThread.svelte';
 	import FavoriteButton from './FavoriteButton.svelte';
 	import Icon from './Icon.svelte';
 	import Photo from './Photo.svelte';
 
 	let { item, people, viewer }: { item: ListingWithSeller; people: Record<string, User>; viewer: User } = $props();
-	let commentsOpen = $state(false);
+	let expanded = $state(false);
 
 	const listing = $derived(item.listing);
 	const latest = $derived(listing.comments.reduce<(typeof listing.comments)[number] | undefined>((a, c) => (!a || c.createdAt > a.createdAt ? c : a), undefined));
@@ -25,23 +25,27 @@
 		<h2 class="name" id="ft-{listing.id}">{listing.title}</h2>
 		<span class="meta">{listing.neighborhood} · {formatKm(listing.distanceKm)}</span>
 	</a>
-	<button type="button" class="talk" aria-haspopup="dialog" onclick={() => (commentsOpen = true)}>
+	<button type="button" class="talk" aria-expanded={expanded} onclick={() => (expanded = !expanded)}>
 		<Icon name="chat" size={14} />
-		{#if latest}
+		{#if expanded}
+			<span class="last">{listing.comments.length > 0 ? `${listing.comments.length} comentários` : 'Comentários'}</span>
+			<span class="hide">Fechar</span>
+		{:else if latest}
 			<span class="count">{listing.comments.length}</span>
 			<span class="last"><strong>{latestAuthor}:</strong> {latest.text}</span>
 		{:else}
 			<span class="last">Seja o primeiro a comentar</span>
 		{/if}
 	</button>
+	{#if expanded}<CommentsThread {item} {people} {viewer} compact />{/if}
 </article>
-
-<CommentsSheet bind:open={commentsOpen} {item} {people} {viewer} />
 
 <style>
 	.tile {
 		position: relative;
 		display: grid;
+		align-content: start;
+		align-self: start;
 		gap: 10px;
 		min-width: 0;
 	}
@@ -104,6 +108,11 @@
 	}
 	.talk :global(svg) {
 		flex: none;
+	}
+	.hide {
+		margin-left: auto;
+		font-weight: 700;
+		color: var(--ink);
 	}
 	.count {
 		font-weight: 800;
