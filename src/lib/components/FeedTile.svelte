@@ -2,11 +2,13 @@
 	import type { User } from '$lib/api/schemas';
 	import type { ListingWithSeller } from '$lib/api/types';
 	import { formatBRL, formatKm } from '$lib/utils/format';
+	import CommentsSheet from './CommentsSheet.svelte';
 	import FavoriteButton from './FavoriteButton.svelte';
 	import Icon from './Icon.svelte';
 	import Photo from './Photo.svelte';
 
-	let { item, people }: { item: ListingWithSeller; people: Record<string, User> } = $props();
+	let { item, people, viewer }: { item: ListingWithSeller; people: Record<string, User>; viewer: User } = $props();
+	let commentsOpen = $state(false);
 
 	const listing = $derived(item.listing);
 	const latest = $derived(listing.comments.reduce<(typeof listing.comments)[number] | undefined>((a, c) => (!a || c.createdAt > a.createdAt ? c : a), undefined));
@@ -23,7 +25,7 @@
 		<h2 class="name" id="ft-{listing.id}">{listing.title}</h2>
 		<span class="meta">{listing.neighborhood} · {formatKm(listing.distanceKm)}</span>
 	</a>
-	<a class="talk" href="/anuncio/{listing.id}#comentarios">
+	<button type="button" class="talk" aria-haspopup="dialog" onclick={() => (commentsOpen = true)}>
 		<Icon name="chat" size={14} />
 		{#if latest}
 			<span class="count">{listing.comments.length}</span>
@@ -31,8 +33,10 @@
 		{:else}
 			<span class="last">Seja o primeiro a comentar</span>
 		{/if}
-	</a>
+	</button>
 </article>
+
+<CommentsSheet bind:open={commentsOpen} {item} {people} {viewer} />
 
 <style>
 	.tile {
@@ -84,7 +88,12 @@
 		align-items: center;
 		gap: 6px;
 		min-width: 0;
+		width: 100%;
 		padding: 7px 10px;
+		border: 0;
+		text-align: left;
+		font: inherit;
+		cursor: pointer;
 		border-radius: var(--radius-s);
 		background: var(--surface);
 		font-size: 12px;
