@@ -131,8 +131,6 @@
 
 <style>
 	.post {
-		display: flex;
-		flex-direction: column;
 		overflow: hidden;
 	}
 	.head {
@@ -210,7 +208,6 @@
 	.body {
 		display: grid;
 		gap: 12px;
-		flex: 1;
 		padding: 16px 18px;
 	}
 	.title {
@@ -223,6 +220,7 @@
 		justify-content: space-between;
 		padding: 12px 18px;
 		border-top: 1.5px solid var(--line);
+		border-bottom: 1.5px solid var(--line);
 	}
 	.comments-count {
 		display: inline-flex;
@@ -292,14 +290,6 @@
 	}
 	.mob {
 		display: none;
-	}
-
-	/* Desktop feed is a grid of equal-height cards: comments live on the listing page. */
-	@media (min-width: 1024px) {
-		.comments,
-		.add-comment {
-			display: none;
-		}
 	}
 
 	@media (max-width: 1023px) {

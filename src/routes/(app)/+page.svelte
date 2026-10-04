@@ -173,7 +173,8 @@
 	.posts {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 16px;
+		align-items: start;
+		gap: 20px;
 	}
 	.mob-cat {
 		display: none;
