@@ -37,7 +37,7 @@
 	</button>
 </article>
 
-<Sheet bind:open={commentsOpen} title="Comentários">
+<Sheet bind:open={commentsOpen} title="Comentários" wide>
 	<p class="about"><strong>{listing.title}</strong> · <a href="/anuncio/{listing.id}">ver anúncio</a></p>
 	<CommentsThread {item} {people} {viewer} />
 </Sheet>

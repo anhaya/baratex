@@ -5,9 +5,11 @@
 	interface Props {
 		open: boolean;
 		title: string;
+		/** Wider dialog on desktop, for longer content like comment threads. */
+		wide?: boolean;
 		children: Snippet;
 	}
-	let { open = $bindable(), title, children }: Props = $props();
+	let { open = $bindable(), title, wide = false, children }: Props = $props();
 	let dialog: HTMLDialogElement | undefined = $state();
 
 	$effect(() => {
@@ -22,7 +24,7 @@
 	}
 </script>
 
-<dialog bind:this={dialog} onclose={() => (open = false)} {onclick} aria-labelledby="sheet-title">
+<dialog class:wide bind:this={dialog} onclose={() => (open = false)} {onclick} aria-labelledby="sheet-title">
 	<div class="sheet">
 		<span class="grip" aria-hidden="true"></span>
 		<header>
@@ -53,6 +55,14 @@
 		dialog {
 			margin: auto;
 			border-radius: 28px;
+		}
+		dialog.wide {
+			max-width: 760px;
+		}
+		dialog.wide .sheet {
+			gap: 20px;
+			padding: 16px 28px 28px;
+			font-size: 16px;
 		}
 	}
 	.sheet {
