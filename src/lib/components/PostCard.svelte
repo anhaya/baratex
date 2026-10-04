@@ -4,8 +4,7 @@
 	import type { Comment, User } from '$lib/api/schemas';
 	import type { ListingWithSeller } from '$lib/api/types';
 	import { stayOnPage } from '$lib/forms';
-	import { CONDITION_LONG, CONDITION_LABELS } from '$lib/labels';
-	import { formatBRL, formatKm, rating, timeAgo } from '$lib/utils/format';
+	import { formatKm, rating, timeAgo } from '$lib/utils/format';
 	import Avatar from './Avatar.svelte';
 	import FavoriteButton from './FavoriteButton.svelte';
 	import Icon from './Icon.svelte';
@@ -26,19 +25,6 @@
 	const href = $derived(`/anuncio/${listing.id}`);
 	const shownComments = $derived(listing.comments.slice(0, 2));
 	const extraPhotos = $derived(Math.max(0, listing.photos.length - 3));
-
-	const shippingTag = $derived.by(() => {
-		const { deliveryPrice, pickupSpotKm } = listing.shipping;
-		if (deliveryPrice !== null && pickupSpotKm !== null) return `Frete ${formatBRL(deliveryPrice)} ou retirada`;
-		if (deliveryPrice !== null) return `Frete ${formatBRL(deliveryPrice)}`;
-		return 'Só retirada';
-	});
-	const tags = $derived([CONDITION_LONG[listing.condition], ...listing.tags, shippingTag, 'Compra protegida']);
-	const mobileMeta = $derived(
-		[CONDITION_LABELS[listing.condition], ...listing.tags.slice(0, 1), shippingTag]
-			.map((part, i) => (i === 0 ? part : part.charAt(0).toLowerCase() + part.slice(1)))
-			.join(' · ')
-	);
 
 	let slide = $state(0);
 	let offerOpen = $state(false);
@@ -88,11 +74,6 @@
 
 	<div class="body">
 		<h2 id="t-{listing.id}" class="display title"><a {href}>{listing.title}</a></h2>
-		<p class="mob mobile-meta">{mobileMeta}</p>
-		<ul class="tags desk" aria-label="Detalhes">
-			{#each tags as t (t)}<li class="chip">{t}</li>{/each}
-		</ul>
-		{#if listing.description}<p class="desc desk">{listing.description.split(/(?<=[.!?])\s/).slice(0, 2).join(' ')}</p>{/if}
 	</div>
 
 	<div class="actions">
@@ -215,21 +196,6 @@
 	.title {
 		font-size: 22px;
 		line-height: 1.2;
-	}
-	.tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-	.tags .chip {
-		font-size: 12px;
-	}
-	.desc {
-		font-size: 14px;
-		color: var(--ink-3);
 	}
 	.actions {
 		display: flex;
@@ -392,10 +358,6 @@
 		}
 		.title {
 			font-size: 18px;
-		}
-		.mobile-meta {
-			font-size: 13px;
-			color: var(--muted);
 		}
 		.actions {
 			gap: 16px;
