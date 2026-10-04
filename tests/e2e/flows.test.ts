@@ -59,15 +59,11 @@ test('AI chat answers and refines', async ({ page, isMobile }) => {
 	await expect(page.getByText(/Comparando os dois/)).toBeVisible();
 });
 
-test('changing the radius filters the feed', async ({ page, isMobile }) => {
+test('changing the radius filters the feed', async ({ page }) => {
 	await page.goto('/');
-	if (isMobile) {
-		await page.getByRole('button', { name: /5 km/ }).click();
-		await page.getByRole('radio', { name: /A pé/ }).click();
-		await page.getByRole('button', { name: 'Ver anúncios até 1 km' }).click();
-	} else {
-		await page.getByRole('radio', { name: /A pé/ }).click();
-	}
+	await page.getByRole('button', { name: /5 km/ }).click();
+	await page.getByRole('radio', { name: /A pé/ }).click();
+	await page.getByRole('button', { name: 'Ver anúncios até 1 km' }).click();
 	// Nothing in the seed data is within walking distance.
 	await expect(page.getByRole('heading', { name: 'Nada por aqui ainda' })).toBeVisible();
 });

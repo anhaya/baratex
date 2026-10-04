@@ -3,9 +3,11 @@
 	import type { Category } from '$lib/api/schemas';
 	import AiFab from '$lib/components/AiFab.svelte';
 	import DistancePicker from '$lib/components/DistancePicker.svelte';
+	import FeedTile from '$lib/components/FeedTile.svelte';
 	import Icon, { type IconName } from '$lib/components/Icon.svelte';
 	import Menu from '$lib/components/Menu.svelte';
 	import PostCard from '$lib/components/PostCard.svelte';
+	import Sheet from '$lib/components/Sheet.svelte';
 	import { CATEGORY_LABELS, MORE_CATEGORIES, PRIMARY_CATEGORIES } from '$lib/labels';
 
 	let { data } = $props();
@@ -30,6 +32,8 @@
 		return qs ? `/?${qs}` : '/';
 	}
 
+	let distanceOpen = $state(false);
+
 	const moreActive = $derived(data.category !== null && MORE_CATEGORIES.includes(data.category));
 </script>
 
@@ -38,90 +42,87 @@
 	<meta name="description" content="Compre e venda usados perto de você, com compra protegida." />
 </svelte:head>
 
-<div class="layout">
-	<main class="feed">
-		<h1 class="visually-hidden">Feed</h1>
-		<div class="filters">
-			<nav class="cats" aria-label="Categorias">
-				<a class="cat" class:on={data.category === null} href={hrefWith({ categoria: null })} aria-current={data.category === null ? 'true' : undefined}>
-					<Icon name="grid" size={16} />Todas
+<main class="feed">
+	<h1 class="visually-hidden">Feed</h1>
+	<div class="filters">
+		<nav class="cats" aria-label="Categorias">
+			<a class="cat" class:on={data.category === null} href={hrefWith({ categoria: null })} aria-current={data.category === null ? 'true' : undefined}>
+				<Icon name="grid" size={16} />Todas
+			</a>
+			{#each PRIMARY_CATEGORIES as c (c)}
+				<a class="cat" class:on={data.category === c} href={hrefWith({ categoria: c })} aria-current={data.category === c ? 'true' : undefined}>
+					<Icon name={ICONS[c]} size={16} />{CATEGORY_LABELS[c]}
 				</a>
-				{#each PRIMARY_CATEGORIES as c (c)}
-					<a class="cat" class:on={data.category === c} href={hrefWith({ categoria: c })} aria-current={data.category === c ? 'true' : undefined}>
-						<Icon name={ICONS[c]} size={16} />{CATEGORY_LABELS[c]}
-					</a>
-				{/each}
+			{/each}
+			{#each MORE_CATEGORIES as c (c)}
+				<a class="cat mob-cat" class:on={data.category === c} href={hrefWith({ categoria: c })} aria-current={data.category === c ? 'true' : undefined}>
+					<Icon name={ICONS[c]} size={16} />{CATEGORY_LABELS[c]}
+				</a>
+			{/each}
+			<span class="desk-menu"><Menu label={moreActive && data.category ? CATEGORY_LABELS[data.category] : 'Mais categorias'} variant={moreActive ? 'active' : 'dashed'}>
 				{#each MORE_CATEGORIES as c (c)}
-					<a class="cat mob-cat" class:on={data.category === c} href={hrefWith({ categoria: c })} aria-current={data.category === c ? 'true' : undefined}>
-						<Icon name={ICONS[c]} size={16} />{CATEGORY_LABELS[c]}
-					</a>
+					<a href={hrefWith({ categoria: c })} role="menuitem"><Icon name={ICONS[c]} size={16} />{CATEGORY_LABELS[c]}</a>
 				{/each}
-				<span class="desk-menu"><Menu label={moreActive && data.category ? CATEGORY_LABELS[data.category] : 'Mais categorias'} variant={moreActive ? 'active' : 'dashed'}>
-					{#each MORE_CATEGORIES as c (c)}
-						<a href={hrefWith({ categoria: c })} role="menuitem"><Icon name={ICONS[c]} size={16} />{CATEGORY_LABELS[c]}</a>
-					{/each}
-				</Menu></span>
-			</nav>
-			<Menu label={SORTS[data.sort]} variant="plain" align="end">
-				{#each Object.entries(SORTS) as [key, label] (key)}
-					<a href={hrefWith({ ordem: key === 'recent' ? null : key })} role="menuitem" aria-current={data.sort === key ? 'true' : undefined}>{label}</a>
-				{/each}
-			</Menu>
+			</Menu></span>
+		</nav>
+		<button type="button" class="distance-pill" onclick={() => (distanceOpen = true)} aria-haspopup="dialog">
+			<Icon name="pin" size={16} />{data.viewer.neighborhood} · {data.radiusKm === null ? 'só entrega' : `até ${data.radiusKm} km`}
+		</button>
+		<Menu label={SORTS[data.sort]} variant="plain" align="end">
+			{#each Object.entries(SORTS) as [key, label] (key)}
+				<a href={hrefWith({ ordem: key === 'recent' ? null : key })} role="menuitem" aria-current={data.sort === key ? 'true' : undefined}>{label}</a>
+			{/each}
+		</Menu>
+	</div>
+
+	{#if data.items.length === 0}
+		<div class="empty card">
+			<h2 class="display">Nada por aqui ainda</h2>
+			<p class="muted">
+				Não achamos anúncios {data.radiusKm === null ? 'com entrega' : `até ${data.radiusKm} km`} nesta categoria. Aumente a distância ou peça ajuda pra IA.
+			</p>
+			<a class="btn btn-primary" href="/chat"><Icon name="sparkle" size={18} />Perguntar pra IA</a>
 		</div>
-
-		{#if data.items.length === 0}
-			<div class="empty card">
-				<h2 class="display">Nada por aqui ainda</h2>
-				<p class="muted">
-					Não achamos anúncios {data.radiusKm === null ? 'com entrega' : `até ${data.radiusKm} km`} nesta categoria. Aumente a distância ou peça ajuda pra IA.
-				</p>
-				<a class="btn btn-primary" href="/chat"><Icon name="sparkle" size={18} />Perguntar pra IA</a>
-			</div>
-		{:else}
-			<div class="posts">
-				{#each data.items as item, i (item.listing.id)}
-					<PostCard {item} people={data.people} viewer={data.viewer} eager={i === 0} />
-				{/each}
-			</div>
-			{#if data.hasMore}
-				<a class="btn btn-outline more" href={hrefWith({ pagina: String(data.page + 1) })} data-sveltekit-noscroll>Ver mais anúncios</a>
-			{/if}
+	{:else}
+		<div class="posts">
+			{#each data.items as item, i (item.listing.id)}
+				<PostCard {item} people={data.people} viewer={data.viewer} eager={i === 0} />
+			{/each}
+		</div>
+		<div class="grid">
+			{#each data.items as item (item.listing.id)}
+				<FeedTile {item} />
+			{/each}
+		</div>
+		{#if data.hasMore}
+			<a class="btn btn-outline more" href={hrefWith({ pagina: String(data.page + 1) })} data-sveltekit-noscroll>Ver mais anúncios</a>
 		{/if}
-	</main>
+	{/if}
+</main>
 
-	<aside class="rail">
-		<section class="card distance" aria-labelledby="distance-title">
-			<h2 id="distance-title">Até onde você vai buscar?</h2>
-			<DistancePicker radiusKm={data.radiusKm} neighborhood={data.viewer.neighborhood} />
-		</section>
-	</aside>
-</div>
+<Sheet bind:open={distanceOpen} title="Até onde você vai buscar?">
+	<DistancePicker radiusKm={data.radiusKm} neighborhood={data.viewer.neighborhood} mode="confirm" onapplied={() => (distanceOpen = false)} />
+</Sheet>
 
 <AiFab />
 
 <style>
-	.layout {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) 300px;
-		gap: 24px;
-		align-items: start;
-	}
 	.feed {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		gap: 16px;
+		gap: 20px;
 		min-width: 0;
 	}
 	.filters {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
 		gap: 12px;
 	}
 	.cats {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 8px;
+		margin-right: auto;
 	}
 	.cat {
 		display: inline-flex;
@@ -139,9 +140,29 @@
 		background: var(--accent);
 		color: var(--white);
 	}
+	.distance-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 38px;
+		padding: 0 14px;
+		border: 1.5px solid var(--line);
+		border-radius: var(--pill);
+		background: var(--white);
+		font-size: 14px;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+	.distance-pill:hover {
+		border-color: var(--ink);
+	}
 	.posts {
+		display: none;
+	}
+	.grid {
 		display: grid;
-		gap: 20px;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 28px 20px;
 	}
 	.mob-cat {
 		display: none;
@@ -158,32 +179,8 @@
 	.empty h2 {
 		font-size: 20px;
 	}
-	.rail {
-		position: sticky;
-		top: calc(var(--header-h) + 24px);
-	}
-	.distance {
-		display: grid;
-		gap: 14px;
-		padding: 18px;
-	}
-	.distance h2 {
-		font-size: 16px;
-		font-weight: 800;
-	}
 
-	@media (max-width: 1279px) {
-		.layout {
-			grid-template-columns: minmax(0, 1fr) 260px;
-		}
-	}
 	@media (max-width: 1023px) {
-		.layout {
-			grid-template-columns: minmax(0, 1fr);
-		}
-		.rail {
-			display: none;
-		}
 		.feed {
 			gap: 12px;
 		}
@@ -196,13 +193,18 @@
 			scrollbar-width: none;
 		}
 		.filters > :global(:last-child),
+		.distance-pill,
 		.desk-menu {
 			display: none;
 		}
 		.mob-cat {
 			display: inline-flex;
 		}
+		.grid {
+			display: none;
+		}
 		.posts {
+			display: grid;
 			gap: 14px;
 			padding: 0 12px;
 		}
