@@ -175,7 +175,7 @@
 		grid-template-columns: 2fr 1fr;
 		grid-template-rows: 1fr 1fr;
 		gap: 4px;
-		height: 420px;
+		height: 340px;
 	}
 	.gallery.single {
 		grid-template-columns: 1fr;
@@ -333,7 +333,7 @@
 		.gallery {
 			display: flex;
 			height: auto;
-			aspect-ratio: 1 / 0.82;
+			aspect-ratio: 1 / 0.7;
 			overflow-x: auto;
 			scroll-snap-type: x mandatory;
 			scrollbar-width: none;
