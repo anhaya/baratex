@@ -36,15 +36,10 @@ export const users: User[] = [
 ];
 
 // Listings without a real product shot borrow a placeholder photo from a fixed pool.
-export const STOCK_PHOTOS = 24;
+export const STOCK_PHOTOS = 32;
 let stockIndex = 0;
 export const stockSrc = (n: number) => `/images/stock-${String((n % STOCK_PHOTOS) + 1).padStart(2, '0')}.jpg`;
 const photo = (alt: string, note?: string): Photo => ({ src: stockSrc(stockIndex++), alt, ...(note ? { note } : {}) });
-const img = (file: string, alt: string, note?: string): Photo => ({
-	src: `/images/${file}.jpg`,
-	alt,
-	...(note ? { note } : {})
-});
 
 type Seed = Omit<Listing, 'comments' | 'specs' | 'tags' | 'subcategoryPath' | 'hasInvoice' | 'acceptsOffers' | 'status' | 'fairPrice' | 'description'> &
 	Partial<Listing>;
@@ -98,10 +93,10 @@ export const listings: Listing[] = [
 		condition: 'muito_bom',
 		price: R(650),
 		photos: [
-			img('bike-yellow', 'Bicicleta amarela com cestinha'),
-			img('bike-lilac', 'Lateral da bicicleta com bagageiro'),
-			img('bike-purple', 'Detalhe do garfo', 'Marca de uso: risco no garfo'),
-			img('bike-black', 'Bicicleta vista de trás')
+			photo('Bicicleta amarela com cestinha'),
+			photo('Lateral da bicicleta com bagageiro'),
+			photo('Detalhe do garfo', 'Marca de uso: risco no garfo'),
+			photo('Bicicleta vista de trás')
 		],
 		tags: ['Aro 26', 'Cestinha e bagageiro'],
 		specs: [
@@ -181,7 +176,7 @@ export const listings: Listing[] = [
 		subcategoryPath: ['Esportes', 'Ciclismo', 'Bicicletas'],
 		condition: 'muito_bom',
 		price: R(520),
-		photos: [img('bike-lilac', 'Bicicleta lilás com cestinha')],
+		photos: [photo('Bicicleta lilás com cestinha')],
 		tags: ['Aro 26', '6 marchas'],
 		postedAt: ago(5 * HOUR),
 		distanceKm: 3.4,
@@ -213,7 +208,7 @@ export const listings: Listing[] = [
 		subcategoryPath: ['Esportes', 'Ciclismo', 'Bicicletas'],
 		condition: 'bom',
 		price: R(590),
-		photos: [img('bike-purple', 'Bicicleta roxa com bagageiro')],
+		photos: [photo('Bicicleta roxa com bagageiro')],
 		tags: ['Aro 26'],
 		postedAt: ago(8 * HOUR),
 		distanceKm: 4.8,
@@ -351,7 +346,7 @@ export const listings: Listing[] = [
 		subcategoryPath: ['Esportes', 'Ciclismo', 'Bicicletas'],
 		condition: 'muito_bom',
 		price: R(700),
-		photos: [img('bike-black', 'Bicicleta preta clássica')],
+		photos: [photo('Bicicleta preta clássica')],
 		postedAt: ago(3 * DAY),
 		distanceKm: 1.2,
 		neighborhood: 'Pinheiros',

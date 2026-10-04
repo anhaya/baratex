@@ -65,7 +65,7 @@ describe('mock api', () => {
 
 describe('schemas', () => {
 	it('only accepts same-origin image paths', () => {
-		expect(Photo.safeParse({ src: '/images/bike-yellow.jpg', alt: 'x' }).success).toBe(true);
+		expect(Photo.safeParse({ src: '/images/stock-01.jpg', alt: 'x' }).success).toBe(true);
 		expect(Photo.safeParse({ src: 'https://evil.example/x.jpg', alt: 'x' }).success).toBe(false);
 		expect(Photo.safeParse({ src: 'javascript:alert(1)', alt: 'x' }).success).toBe(false);
 	});
