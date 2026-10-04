@@ -35,7 +35,11 @@ export const users: User[] = [
 	{ id: 'lu', name: 'Lu', handle: 'brecho.da.lu', rating: 4.9, salesCount: 640, neighborhood: 'Bela Vista', responseTime: '~10 min', verified: true }
 ];
 
-const photo = (alt: string, note?: string): Photo => ({ src: null, alt, ...(note ? { note } : {}) });
+// Listings without a real product shot borrow a placeholder photo from a fixed pool.
+export const STOCK_PHOTOS = 24;
+let stockIndex = 0;
+export const stockSrc = (n: number) => `/images/stock-${String((n % STOCK_PHOTOS) + 1).padStart(2, '0')}.jpg`;
+const photo = (alt: string, note?: string): Photo => ({ src: stockSrc(stockIndex++), alt, ...(note ? { note } : {}) });
 const img = (file: string, alt: string, note?: string): Photo => ({
 	src: `/images/${file}.jpg`,
 	alt,

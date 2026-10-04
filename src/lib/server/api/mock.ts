@@ -448,7 +448,7 @@ export function createMockApi(): BaratexApi & { reset(): void } {
 					subcategoryPath: [],
 					condition: input.condition,
 					price: input.price,
-					photos: Array.from({ length: input.photoCount }, (_, i) => ({ src: null, alt: `${input.title}, foto ${i + 1}` })),
+					photos: Array.from({ length: input.photoCount }, (_, i) => ({ src: seed.stockSrc(Date.now() + i), alt: `${input.title}, foto ${i + 1}` })),
 					tags: [],
 					specs: [],
 					postedAt: nowIso(),
