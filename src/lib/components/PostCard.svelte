@@ -51,7 +51,7 @@
 		</div>
 		<div class="head-actions">
 			<button type="button" class="icon-btn offer" aria-label="Fazer oferta em “{listing.title}”" title="Fazer oferta" onclick={() => (offerOpen = true)}>
-				<Icon name="tag" size={18} />
+				<Icon name="cart" size={18} />
 			</button>
 			<FavoriteButton listingId={listing.id} favorite={item.favorite} title={listing.title} />
 		</div>
