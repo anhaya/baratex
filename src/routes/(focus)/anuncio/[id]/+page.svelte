@@ -82,6 +82,14 @@
 				<Photo photo={listing.photos[current]} eager dim={sold} />
 				{#if listing.photos[current]?.note}<span class="note">{listing.photos[current]?.note}</span>{/if}
 				<span class="counter">{current + 1} / {listing.photos.length}</span>
+				{#if listing.photos.length > 1}
+					<button type="button" class="nav prev" aria-label="Foto anterior" onclick={() => (current = (current - 1 + listing.photos.length) % listing.photos.length)}>
+						<Icon name="chevron-left" size={20} />
+					</button>
+					<button type="button" class="nav next" aria-label="Próxima foto" onclick={() => (current = (current + 1) % listing.photos.length)}>
+						<Icon name="chevron-right" size={20} />
+					</button>
+				{/if}
 			</div>
 			{#if listing.photos.length > 1}
 				<div class="thumbs">
@@ -330,6 +338,31 @@
 	}
 	.back:hover {
 		border-color: var(--ink);
+	}
+	.nav {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		display: grid;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		padding: 0;
+		border: 1.5px solid var(--line);
+		border-radius: 50%;
+		background: var(--white);
+		color: var(--ink);
+		box-shadow: var(--shadow-pop);
+		cursor: pointer;
+	}
+	.nav:hover {
+		border-color: var(--ink);
+	}
+	.prev {
+		left: 14px;
+	}
+	.next {
+		right: 14px;
 	}
 	.counter {
 		position: absolute;
