@@ -308,10 +308,10 @@
 	}
 	.main {
 		position: relative;
-		aspect-ratio: 1.6;
+		height: 340px;
 		overflow: hidden;
 		border-radius: var(--radius-l);
-		padding: 16px;
+		padding: 12px;
 	}
 	.back-bar {
 		margin-bottom: -16px;
@@ -679,6 +679,8 @@
 			position: static;
 		}
 		.main {
+			height: auto;
+			aspect-ratio: 1.6;
 			border-radius: 0 0 28px 28px;
 			border-top: 0;
 		}
