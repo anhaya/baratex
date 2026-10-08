@@ -9,7 +9,6 @@
 	import OfferDialog from '$lib/components/OfferDialog.svelte';
 	import Photo from '$lib/components/Photo.svelte';
 	import { stayOnPage } from '$lib/forms';
-	import { CONDITION_STATE } from '$lib/labels';
 	import { formatBRL, formatKm, rating, timeAgo } from '$lib/utils/format';
 	import { buyerTotal, fairPosition, protectionFee } from '$lib/utils/pricing';
 
@@ -46,7 +45,10 @@
 		if (!listing.fairPrice) return null;
 		const pos = fairPosition(listing.price, listing.fairPrice);
 		const label = pos < 0.25 ? 'Bom preço' : pos <= 0.7 ? 'Preço justo' : 'Acima da média';
-		return { pos, label, ...listing.fairPrice };
+		const avg = Math.round((listing.fairPrice.min + listing.fairPrice.max) / 2);
+		const diff = Math.round(((listing.price - avg) / avg) * 100);
+		const vsAvg = Math.abs(diff) < 5 ? 'Na média' : diff < 0 ? `${-diff}% abaixo da média` : `${diff}% acima da média`;
+		return { pos, label, avg, diff, vsAvg, ...listing.fairPrice };
 	});
 	const author = (id: string) => data.detail.people[id]?.name ?? 'Alguém';
 
@@ -108,11 +110,6 @@
 			</section>
 
 			<section class="buy card" aria-labelledby="title">
-				<ul class="chips">
-					<li class="chip">{CONDITION_STATE[listing.condition]}</li>
-					{#if listing.hasInvoice}<li class="chip">Com nota fiscal</li>{/if}
-					<li class="chip">Postado {timeAgo(listing.postedAt)}</li>
-				</ul>
 				<h1 id="title" class="display">{listing.title}</h1>
 
 				<div class="price-row">
@@ -125,18 +122,17 @@
 				</div>
 
 				{#if fair}
-					<figure class="fair" aria-label="Faixa de preço de vendas parecidas: de {formatBRL(fair.min)} a {formatBRL(fair.max)}">
-						<svg viewBox="0 0 400 14" aria-hidden="true">
-							<rect x="0" y="4" width="400" height="6" rx="3" class="track" />
-							<rect x="100" y="4" width="160" height="6" class="band" />
-							<circle cx={Math.max(7, Math.min(393, fair.pos * 400))} cy="7" r="6" class="dot" />
-						</svg>
-						<figcaption>
-							<span>{formatBRL(fair.min)}</span>
-							<span>vendas parecidas, 90 dias</span>
-							<span>{formatBRL(fair.max)}</span>
-						</figcaption>
-					</figure>
+					<dl class="fair">
+						<div class="avg">
+							<dt>Preço médio de vendas parecidas</dt>
+							<dd class="display">{formatBRL(fair.avg)}</dd>
+							<dd class="range">De {formatBRL(fair.min)} a {formatBRL(fair.max)} · últimos 90 dias</dd>
+						</div>
+						<div class="cmp" class:below={fair.diff <= -5} class:above={fair.diff >= 5}>
+							<dt class="visually-hidden">Este anúncio</dt>
+							<dd>{fair.vsAvg}</dd>
+						</div>
+					</dl>
 				{/if}
 
 				{#if !sold}
@@ -371,18 +367,6 @@
 		gap: 18px;
 		padding: 28px;
 	}
-	.chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-	.chips .chip {
-		background: var(--line-2);
-		font-size: 12px;
-	}
 	h1 {
 		font-size: 30px;
 		line-height: 1.1;
@@ -409,30 +393,50 @@
 		color: var(--white);
 	}
 	.fair {
-		margin: 0;
-		display: grid;
-		gap: 4px;
-	}
-	.fair svg {
-		width: 100%;
-		height: auto;
-	}
-	.track {
-		fill: var(--surface);
-	}
-	.band {
-		fill: var(--line-2);
-	}
-	.dot {
-		fill: var(--ink);
-		stroke: var(--white);
-		stroke-width: 2;
-	}
-	figcaption {
 		display: flex;
+		align-items: center;
 		justify-content: space-between;
+		gap: 12px;
+		margin: 0;
+		padding: 14px 16px;
+		border-radius: var(--radius-m);
+		background: var(--surface);
+	}
+	.fair dd {
+		margin: 0;
+	}
+	.avg {
+		display: grid;
+		gap: 2px;
+		min-width: 0;
+	}
+	.avg dt {
+		font-size: 12px;
+		font-weight: 700;
+		color: var(--muted);
+	}
+	.avg .display {
+		font-size: 20px;
+	}
+	.range {
 		font-size: 12px;
 		color: var(--muted);
+	}
+	.cmp dd {
+		padding: 6px 12px;
+		border-radius: var(--pill);
+		background: var(--white);
+		font-size: 13px;
+		font-weight: 800;
+		white-space: nowrap;
+	}
+	.cmp.below dd {
+		background: var(--accent-soft);
+		color: var(--accent-ink);
+	}
+	.cmp.above dd {
+		background: var(--ink);
+		color: var(--white);
 	}
 	.delivery {
 		display: grid;
