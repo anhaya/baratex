@@ -181,64 +181,66 @@
 				{/if}
 			</section>
 
-			<section class="about card" aria-labelledby="about">
-				<h2 id="about">Sobre a peça</h2>
-				<p class="desc">{listing.description || 'O vendedor não escreveu uma descrição.'}</p>
-				{#if listing.specs.length}
-					<dl class="specs">
-						{#each listing.specs as s (s.label)}
-							<div><dt>{s.label}</dt><dd>{s.value}</dd></div>
-						{/each}
-					</dl>
-				{/if}
-			</section>
 		</div>
+
+		<section class="about card" aria-labelledby="about">
+			<h2 id="about">Sobre a peça</h2>
+			<p class="desc">{listing.description || 'O vendedor não escreveu uma descrição.'}</p>
+			{#if listing.specs.length}
+				<dl class="specs">
+					{#each listing.specs as s (s.label)}
+						<div><dt>{s.label}</dt><dd>{s.value}</dd></div>
+					{/each}
+				</dl>
+			{/if}
+		</section>
+
+		<section id="comentarios" class="comments card" aria-labelledby="comments-title">
+			<h2 id="comments-title">Comentários ({listing.comments.length})</h2>
+			{#if listing.comments.length === 0}
+				<p class="muted">Ninguém perguntou nada ainda. Seja o primeiro.</p>
+			{/if}
+			<ul>
+				{#each listing.comments as c (c.id)}
+					<li class:reply={!!c.replyTo}>
+						<Avatar name={author(c.authorId)} size="s" tone="soft" />
+						<div>
+							<div class="bubble">
+								<strong>{author(c.authorId)}</strong>
+								{#if c.authorId === seller.id}<span class="badge">Vendedor(a)</span>{/if}
+								<p>{c.text}</p>
+							</div>
+							<span class="when">{timeAgo(c.createdAt)} · <button type="button" class="link" onclick={() => (replyTo = c.id)}>Responder</button></span>
+						</div>
+					</li>
+				{/each}
+			</ul>
+			<form
+				method="POST"
+				action="?/comment"
+				class="add"
+				use:enhance={stayOnPage({
+					after: (ok) => {
+						commentError = ok ? '' : 'Não foi possível comentar.';
+						if (ok) replyTo = null;
+					}
+				})}
+			>
+				{#if replyTo}
+					<input type="hidden" name="replyTo" value={replyTo} />
+					<p class="replying">Respondendo {author(listing.comments.find((c) => c.id === replyTo)?.authorId ?? '')} · <button type="button" class="link" onclick={() => (replyTo = null)}>cancelar</button></p>
+				{/if}
+				<div class="add-row">
+					<Avatar name={data.viewer.name} size="s" tone="accent" />
+					<label class="visually-hidden" for="comment">Escreva um comentário</label>
+					<input id="comment" name="text" class="field" placeholder="Escreva um comentário…" maxlength="500" required autocomplete="off" />
+					<button class="btn btn-dark btn-sm">Enviar</button>
+				</div>
+				{#if commentError}<p class="error-text" role="alert">{commentError}</p>{/if}
+			</form>
+		</section>
 	</div>
 
-	<section id="comentarios" class="comments card" aria-labelledby="comments-title">
-		<h2 id="comments-title">Comentários ({listing.comments.length})</h2>
-		{#if listing.comments.length === 0}
-			<p class="muted">Ninguém perguntou nada ainda. Seja o primeiro.</p>
-		{/if}
-		<ul>
-			{#each listing.comments as c (c.id)}
-				<li class:reply={!!c.replyTo}>
-					<Avatar name={author(c.authorId)} size="s" tone="soft" />
-					<div>
-						<div class="bubble">
-							<strong>{author(c.authorId)}</strong>
-							{#if c.authorId === seller.id}<span class="badge">Vendedor(a)</span>{/if}
-							<p>{c.text}</p>
-						</div>
-						<span class="when">{timeAgo(c.createdAt)} · <button type="button" class="link" onclick={() => (replyTo = c.id)}>Responder</button></span>
-					</div>
-				</li>
-			{/each}
-		</ul>
-		<form
-			method="POST"
-			action="?/comment"
-			class="add"
-			use:enhance={stayOnPage({
-				after: (ok) => {
-					commentError = ok ? '' : 'Não foi possível comentar.';
-					if (ok) replyTo = null;
-				}
-			})}
-		>
-			{#if replyTo}
-				<input type="hidden" name="replyTo" value={replyTo} />
-				<p class="replying">Respondendo {author(listing.comments.find((c) => c.id === replyTo)?.authorId ?? '')} · <button type="button" class="link" onclick={() => (replyTo = null)}>cancelar</button></p>
-			{/if}
-			<div class="add-row">
-				<Avatar name={data.viewer.name} size="s" tone="accent" />
-				<label class="visually-hidden" for="comment">Escreva um comentário</label>
-				<input id="comment" name="text" class="field" placeholder="Escreva um comentário…" maxlength="500" required autocomplete="off" />
-				<button class="btn btn-dark btn-sm">Enviar</button>
-			</div>
-			{#if commentError}<p class="error-text" role="alert">{commentError}</p>{/if}
-		</form>
-	</section>
 
 	{#if data.detail.moreFromSeller.length}
 		<section class="more" aria-labelledby="more-title">
@@ -273,13 +275,32 @@
 		margin: 0 auto;
 		padding: 32px 48px 80px;
 		display: grid;
-		gap: 40px;
+		gap: 28px;
 	}
 	.top-grid {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 470px;
-		gap: 40px;
+		grid-template-columns: minmax(0, 1fr) 400px;
+		grid-template-areas:
+			'gallery info'
+			'about info'
+			'comments info';
+		grid-template-rows: auto auto 1fr;
+		gap: 16px 28px;
 		align-items: start;
+	}
+	.gallery {
+		grid-area: gallery;
+	}
+	.info {
+		grid-area: info;
+		position: sticky;
+		top: 16px;
+	}
+	.about {
+		grid-area: about;
+	}
+	.comments {
+		grid-area: comments;
 	}
 	.gallery {
 		display: grid;
@@ -287,13 +308,13 @@
 	}
 	.main {
 		position: relative;
-		aspect-ratio: 1.43;
+		aspect-ratio: 1.6;
 		overflow: hidden;
-		border-radius: 28px;
-		padding: 32px;
+		border-radius: var(--radius-l);
+		padding: 16px;
 	}
 	.back-bar {
-		margin-bottom: -24px;
+		margin-bottom: -16px;
 	}
 	.back {
 		display: inline-flex;
@@ -329,30 +350,32 @@
 		font-weight: 700;
 	}
 	.thumbs {
-		display: grid;
-		grid-auto-flow: column;
-		grid-auto-columns: minmax(0, 1fr);
-		gap: 12px;
+		display: flex;
+		gap: 8px;
 	}
 	.thumb {
 		position: relative;
-		aspect-ratio: 1.37;
+		flex: 0 0 76px;
+		aspect-ratio: 1;
 		overflow: hidden;
-		padding: 24px;
-		border-radius: 28px;
+		padding: 4px;
+		border-radius: var(--radius-s);
+	}
+	.thumb .note {
+		display: none;
 	}
 	.thumb:hover {
 		border-color: var(--ink);
 	}
 	.info {
 		display: grid;
-		gap: 14px;
+		gap: 12px;
 	}
 	.seller {
 		display: flex;
 		align-items: center;
-		gap: 12px;
-		padding: 14px 16px;
+		gap: 10px;
+		padding: 10px 14px;
 	}
 	.who {
 		flex: 1;
@@ -364,12 +387,12 @@
 	}
 	.buy {
 		display: grid;
-		gap: 18px;
-		padding: 28px;
+		gap: 12px;
+		padding: 20px;
 	}
 	h1 {
-		font-size: 30px;
-		line-height: 1.1;
+		font-size: 22px;
+		line-height: 1.15;
 	}
 	.price-row {
 		display: flex;
@@ -377,7 +400,7 @@
 		justify-content: space-between;
 	}
 	.price {
-		font-size: 44px;
+		font-size: 30px;
 		line-height: 1;
 	}
 	.pill {
@@ -398,8 +421,8 @@
 		justify-content: space-between;
 		gap: 12px;
 		margin: 0;
-		padding: 14px 16px;
-		border-radius: var(--radius-m);
+		padding: 10px 14px;
+		border-radius: var(--radius-s);
 		background: var(--surface);
 	}
 	.fair dd {
@@ -416,7 +439,7 @@
 		color: var(--muted);
 	}
 	.avg .display {
-		font-size: 20px;
+		font-size: 16px;
 	}
 	.range {
 		font-size: 12px;
@@ -450,9 +473,9 @@
 		display: flex;
 		gap: 10px;
 		align-items: flex-start;
-		padding: 14px;
+		padding: 10px 12px;
 		border: 1.5px solid var(--line);
-		border-radius: var(--radius-m);
+		border-radius: var(--radius-s);
 		cursor: pointer;
 	}
 	.opt input {
@@ -481,11 +504,11 @@
 		align-items: baseline;
 	}
 	.total strong {
-		font-size: 20px;
+		font-size: 18px;
 	}
 	.cta {
 		display: grid;
-		gap: 10px;
+		gap: 8px;
 	}
 	.row {
 		display: flex;
@@ -493,19 +516,19 @@
 	}
 	.offer {
 		flex: 1;
-		min-height: 48px;
+		min-height: 44px;
 	}
 	.share {
-		width: 48px;
-		height: 48px;
+		width: 44px;
+		height: 44px;
 	}
 	.small {
 		font-size: 13px;
 	}
 	.protect {
 		display: flex;
-		gap: 10px;
-		font-size: 13px;
+		gap: 8px;
+		font-size: 12px;
 		color: var(--muted);
 	}
 	.protect :global(svg) {
@@ -514,8 +537,8 @@
 	}
 	.about {
 		display: grid;
-		gap: 12px;
-		padding: 22px 24px;
+		gap: 10px;
+		padding: 18px 20px;
 	}
 	.about h2,
 	.comments h2 {
@@ -523,6 +546,7 @@
 		font-weight: 800;
 	}
 	.desc {
+		font-size: 14px;
 		color: var(--ink-3);
 		white-space: pre-line;
 	}
@@ -546,31 +570,30 @@
 	}
 	.comments {
 		display: grid;
-		gap: 14px;
-		padding: 22px 24px;
-		max-width: 860px;
+		gap: 12px;
+		padding: 18px 20px;
 	}
 	.comments ul {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 		display: grid;
-		gap: 12px;
+		gap: 10px;
 	}
 	.comments li {
 		display: flex;
 		gap: 10px;
 	}
 	.comments li.reply {
-		margin-left: 40px;
+		margin-left: 38px;
 	}
 	.bubble {
 		display: grid;
 		gap: 2px;
-		padding: 10px 14px;
-		border-radius: 14px;
+		padding: 8px 12px;
+		border-radius: 12px;
 		background: var(--surface);
-		font-size: 14px;
+		font-size: 13px;
 	}
 	.bubble .badge {
 		justify-self: start;
@@ -608,7 +631,7 @@
 	}
 	.more {
 		display: grid;
-		gap: 20px;
+		gap: 14px;
 	}
 	.more header {
 		display: flex;
@@ -617,7 +640,7 @@
 		gap: 16px;
 	}
 	.more h2 {
-		font-size: 26px;
+		font-size: 20px;
 	}
 	.link-u {
 		font-weight: 700;
@@ -635,10 +658,10 @@
 
 	@media (max-width: 1279px) {
 		.top-grid {
-			grid-template-columns: minmax(0, 1fr) 400px;
+			grid-template-columns: minmax(0, 1fr) 360px;
 		}
 		.tiles {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
+			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
 	}
 	@media (max-width: 1023px) {
@@ -648,7 +671,12 @@
 		}
 		.top-grid {
 			grid-template-columns: minmax(0, 1fr);
+			grid-template-areas: 'gallery' 'info' 'about' 'comments';
+			grid-template-rows: none;
 			gap: 14px;
+		}
+		.info {
+			position: static;
 		}
 		.main {
 			border-radius: 0 0 28px 28px;
@@ -674,20 +702,14 @@
 			gap: 8px;
 		}
 		.thumb {
-			flex: 0 0 96px;
-			aspect-ratio: 1;
-			padding: 8px;
-			border-radius: var(--radius-m);
-		}
-		.thumb .note {
-			display: none;
+			flex: 0 0 72px;
 		}
 		.info,
-		.comments,
 		.more {
 			padding-left: 12px;
 			padding-right: 12px;
 		}
+		.about,
 		.comments {
 			margin: 0 12px;
 			padding: 18px;
@@ -700,10 +722,10 @@
 			display: none;
 		}
 		h1 {
-			font-size: 24px;
+			font-size: 20px;
 		}
 		.price {
-			font-size: 36px;
+			font-size: 28px;
 		}
 		.tiles {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
