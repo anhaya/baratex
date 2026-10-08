@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
@@ -13,6 +14,18 @@
 	import { buyerTotal, fairPosition, protectionFee } from '$lib/utils/pricing';
 
 	let { data } = $props();
+
+	// Going back with history keeps the feed's filters and scroll position;
+	// a direct visit has nothing to go back to, so the link falls back to "/".
+	let cameFromApp = $state(false);
+	afterNavigate(({ from }) => {
+		if (from) cameFromApp = true;
+	});
+	function goBack(event: MouseEvent) {
+		if (!cameFromApp) return;
+		event.preventDefault();
+		history.back();
+	}
 
 	const listing = $derived(data.detail.listing);
 	const seller = $derived(data.detail.seller);
@@ -58,10 +71,12 @@
 </svelte:head>
 
 <main class="page">
+	<nav class="back-bar" aria-label="Navegação">
+		<a href="/" class="back" onclick={goBack}><Icon name="arrow-left" size={18} />Voltar ao feed</a>
+	</nav>
 	<div class="top-grid">
 		<section class="gallery" aria-label="Fotos">
 			<div class="main card">
-				<a href="/" class="back icon-btn" aria-label="Voltar"><Icon name="chevron-left" size={20} /></a>
 				<Photo photo={listing.photos[current]} eager dim={sold} />
 				{#if listing.photos[current]?.note}<span class="note">{listing.photos[current]?.note}</span>{/if}
 				<span class="counter">{current + 1} / {listing.photos.length}</span>
@@ -281,12 +296,23 @@
 		border-radius: 28px;
 		padding: 32px;
 	}
+	.back-bar {
+		margin-bottom: -24px;
+	}
 	.back {
-		position: absolute;
-		top: 20px;
-		left: 20px;
-		z-index: 2;
-		border: 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 40px;
+		padding: 0 16px 0 12px;
+		border: 1.5px solid var(--line);
+		border-radius: var(--pill);
+		background: var(--white);
+		font-size: 14px;
+		font-weight: 700;
+	}
+	.back:hover {
+		border-color: var(--ink);
 	}
 	.counter {
 		position: absolute;
@@ -624,10 +650,18 @@
 			border-radius: 0 0 28px 28px;
 			border-top: 0;
 		}
+		.back-bar {
+			position: sticky;
+			top: 0;
+			z-index: 5;
+			margin-bottom: -24px;
+			padding: 8px 12px;
+			background: var(--white);
+			border-bottom: 1.5px solid var(--line);
+		}
 		.back {
-			top: 14px;
-			left: 14px;
-			border: 1.5px solid var(--line);
+			border: 0;
+			padding-left: 4px;
 		}
 		.thumbs {
 			display: flex;
