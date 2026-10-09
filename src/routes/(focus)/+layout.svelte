@@ -11,7 +11,6 @@
 	<header class="top">
 		<Logo />
 		<div class="actions">
-			<a href="/chat" class="btn btn-ghost"><Icon name="search" size={18} />Buscar</a>
 			<a href="/vender" class="btn btn-primary"><Icon name="plus" size={18} strokeWidth={2.4} />Vender</a>
 		</div>
 	</header>
